@@ -1,4 +1,6 @@
 #include "nn_olv_UploadCommunityTypes.h"
+
+#ifndef ANDROID
 #include <algorithm>
 
 namespace nn
@@ -304,3 +306,5 @@ namespace nn
 		}
 	}
 }
+
+#endif // !ANDROID

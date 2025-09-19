@@ -77,7 +77,10 @@
         "zip"
       ]
     },
-    "libusb"
+    {
+      "name": "libusb",
+      "platform": "!android"
+    }
   ],
   "overrides": [
     {

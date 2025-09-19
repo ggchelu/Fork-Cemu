@@ -1,4 +1,6 @@
 #include "nn_olv_InitializeTypes.h"
+
+#ifndef ANDROID
 #include "CafeSystem.h"
 #include "Cafe/OS/libs/nn_act/nn_act.h"
 #include <time.h>
@@ -296,3 +298,5 @@ namespace nn
 		}
 	}
 }
+
+#endif // !ANDROID

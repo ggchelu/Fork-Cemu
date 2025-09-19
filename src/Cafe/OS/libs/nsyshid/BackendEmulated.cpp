@@ -33,8 +33,12 @@ namespace nsyshid::backend::emulated
 		{
 			cemuLog_logDebug(LogType::Force, "Attaching Xbox 360 Portal");
 			// Add Skylander Xbox 360 Portal
+#if HAS_LIBUSB
 			auto device = std::make_shared<SkylanderXbox360PortalLibusb>(usb_portal);
 			AttachDevice(device);
+#else
+			// For Android builds without libusb, skip this device
+#endif
 		}
 		if (GetConfig().emulated_usb_devices.emulate_infinity_base && !FindDeviceById(0x0E6F, 0x0129))
 		{

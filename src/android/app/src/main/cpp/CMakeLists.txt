@@ -1,4 +1,5 @@
 add_library(CemuAndroid SHARED
+    AndroidStubs.cpp
         AndroidAudio.cpp
         AndroidEmulatedController.cpp
         AndroidSwkbdCallbacks.cpp

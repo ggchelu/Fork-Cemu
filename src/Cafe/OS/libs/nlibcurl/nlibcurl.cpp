@@ -3,6 +3,8 @@
 #include "Cafe/HW/Espresso/PPCCallback.h"
 #include "nlibcurl.h"
 
+#ifndef ANDROID
+
 #include "openssl/bn.h"
 #include "openssl/x509.h"
 #include "openssl/ssl.h"
@@ -1538,4 +1540,7 @@ void load()
 	osLib_addFunction("nlibcurl", "curl_easy_cleanup", export_curl_easy_cleanup);
 	osLib_addFunction("nlibcurl", "curl_easy_pause", export_curl_easy_pause);
 }
+
+#endif // !ANDROID
+
 }

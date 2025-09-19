@@ -46,7 +46,7 @@ val cemuDataFilesFolder = "../../../bin"
 android {
     namespace = "info.cemu.cemu"
     compileSdk = 36
-    ndkVersion = "26.3.11579264"
+    ndkVersion = "27.0.12077973"
     defaultConfig {
         applicationId = "info.cemu.cemu"
         minSdk = 31
@@ -128,7 +128,8 @@ android {
                     "-DENABLE_DISCORD_RPC=OFF",
                     "-DENABLE_NSYSHID_LIBUSB=OFF",
                     "-DENABLE_WAYLAND=OFF",
-                    "-DENABLE_HIDAPI=OFF"
+                    "-DENABLE_HIDAPI=OFF",
+                    "-DCMAKE_DISABLE_FIND_PACKAGE_CURL=ON"
                 )
                 if (versionMajor != null && versionMinor != null) {
                     arguments.addAll(

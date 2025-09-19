@@ -399,9 +399,6 @@ add_library(CemuCafe
   OS/libs/nfc/TagV0.h
   OS/libs/nfc/TLV.cpp
   OS/libs/nfc/TLV.h
-  OS/libs/nlibcurl/nlibcurl.cpp
-  OS/libs/nlibcurl/nlibcurlDebug.hpp
-  OS/libs/nlibcurl/nlibcurl.h
   OS/libs/nlibnss/nlibnss.cpp
   OS/libs/nlibnss/nlibnss.h
   OS/libs/nn_ac/nn_ac.cpp
@@ -436,22 +433,6 @@ add_library(CemuCafe
   OS/libs/nn_nfp/nn_nfp.h
   OS/libs/nn_nim/nn_nim.cpp
   OS/libs/nn_nim/nn_nim.h
-  OS/libs/nn_olv/nn_olv.cpp
-  OS/libs/nn_olv/nn_olv.h
-  OS/libs/nn_olv/nn_olv_Common.cpp
-  OS/libs/nn_olv/nn_olv_Common.h
-  OS/libs/nn_olv/nn_olv_InitializeTypes.cpp
-  OS/libs/nn_olv/nn_olv_InitializeTypes.h
-  OS/libs/nn_olv/nn_olv_DownloadCommunityTypes.cpp
-  OS/libs/nn_olv/nn_olv_DownloadCommunityTypes.h
-  OS/libs/nn_olv/nn_olv_UploadCommunityTypes.cpp
-  OS/libs/nn_olv/nn_olv_UploadCommunityTypes.h
-  OS/libs/nn_olv/nn_olv_UploadFavoriteTypes.cpp
-  OS/libs/nn_olv/nn_olv_UploadFavoriteTypes.h
-  OS/libs/nn_olv/nn_olv_PostTypes.cpp
-  OS/libs/nn_olv/nn_olv_PostTypes.h
-  OS/libs/nn_olv/nn_olv_OfflineDB.cpp
-  OS/libs/nn_olv/nn_olv_OfflineDB.h
   OS/libs/nn_pdm/nn_pdm.cpp
   OS/libs/nn_pdm/nn_pdm.h
   OS/libs/nn_save/nn_save.cpp
@@ -468,16 +449,12 @@ add_library(CemuCafe
   OS/libs/nsyshid/Whitelist.h
   OS/libs/nsyshid/BackendEmulated.cpp
   OS/libs/nsyshid/BackendEmulated.h
-  OS/libs/nsyshid/BackendLibusb.cpp
-  OS/libs/nsyshid/BackendLibusb.h
   OS/libs/nsyshid/Dimensions.cpp
   OS/libs/nsyshid/Dimensions.h
   OS/libs/nsyshid/Infinity.cpp
   OS/libs/nsyshid/Infinity.h
   OS/libs/nsyshid/Skylander.cpp
   OS/libs/nsyshid/Skylander.h
-  OS/libs/nsyshid/SkylanderXbox360.cpp
-  OS/libs/nsyshid/SkylanderXbox360.h
   OS/libs/nsyshid/g721/g721.cpp
   OS/libs/nsyshid/g721/g721.h
   OS/libs/nsyskbd/nsyskbd.cpp
@@ -577,7 +554,7 @@ target_link_libraries(CemuCafe PRIVATE
 	imguiImpl
 	Boost::headers
 	Boost::nowide
-	CURL::libcurl
+	$<$<NOT:$<PLATFORM_ID:Android>>:CURL::libcurl>
 	fmt::fmt
 	${glslang_target}
 	ih264d
@@ -595,6 +572,7 @@ if (ENABLE_WAYLAND)
   target_link_libraries(CemuCafe PUBLIC Wayland::Client)
 endif()
 
+if(NOT ANDROID)
 if (ENABLE_VCPKG)
   if(WIN32)
     set(PKG_CONFIG_EXECUTABLE "${VCPKG_INSTALLED_DIR}/x64-windows/tools/pkgconf/pkgconf.exe")
@@ -606,6 +584,7 @@ else ()
   find_package(libusb MODULE REQUIRED)
   target_link_libraries(CemuCafe PRIVATE libusb::libusb)
 endif ()
+endif()
 
 if(WIN32)
 	target_link_libraries(CemuCafe PRIVATE iphlpapi)

@@ -9,8 +9,6 @@ add_library(CemuComponents
   napi/napi_act.cpp
   napi/napi_ec.cpp
   napi/napi.h
-  napi/napi_helper.cpp
-  napi/napi_helper.h
   napi/napi_idbe.cpp
   napi/napi_version.cpp
   ncrypto/ncrypto.cpp
@@ -49,7 +47,7 @@ target_link_libraries(CemuComponents PRIVATE
 	CemuGui
 	CemuUtil
 	Boost::headers
-	CURL::libcurl
+	$<$<NOT:$<PLATFORM_ID:Android>>:CURL::libcurl>
 	OpenSSL::Crypto
 	OpenSSL::SSL
 	pugixml::pugixml

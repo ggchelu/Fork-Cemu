@@ -135,7 +135,7 @@ target_link_libraries(CemuWxGui PRIVATE
 	CemuResource
 	CemuUtil
 	Boost::headers
-	CURL::libcurl
+	$<$<NOT:$<PLATFORM_ID:Android>>:CURL::libcurl>
 	libzip::zip
 	OpenSSL::Crypto
 	pugixml::pugixml

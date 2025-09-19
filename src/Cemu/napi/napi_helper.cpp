@@ -6,6 +6,8 @@
 
 #include "Cemu/ncrypto/ncrypto.h"
 #include "napi_helper.h"
+
+#ifndef ANDROID
 #include "util/highresolutiontimer/HighResolutionTimer.h"
 #include "config/ActiveSettings.h"
 #include "config/NetworkSettings.h"
@@ -455,3 +457,5 @@ namespace NAPI
 		return true;
 	}
 };
+
+#endif // !ANDROID
