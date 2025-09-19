@@ -1,15 +1,23 @@
 package info.cemu.cemu
 
+import android.Manifest
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.provider.DocumentsContract
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.foundation.layout.padding
@@ -56,8 +64,72 @@ import android.graphics.drawable.Icon as AndroidIcon
 
 
 class MainActivity : ComponentActivity() {
+    
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        // Permissions handled, app will continue with fallback to internal storage if needed
+    }
+    
+    private val requestManageExternalStorageLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        // Handle manage external storage permission result
+    }
+    
+    private fun requestStoragePermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // Android 11+ - Use MANAGE_EXTERNAL_STORAGE
+            if (Environment.isExternalStorageManager()) {
+                // Already have permission
+                android.util.Log.i("MainActivity", "External storage manager permission already granted")
+                return
+            }
+            
+            try {
+                android.util.Log.i("MainActivity", "Requesting MANAGE_EXTERNAL_STORAGE permission")
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                requestManageExternalStorageLauncher.launch(intent)
+            } catch (e: Exception) {
+                android.util.Log.w("MainActivity", "Failed to request MANAGE_EXTERNAL_STORAGE, falling back to legacy: ${e.message}")
+                // Fallback to legacy permissions
+                requestLegacyStoragePermissions()
+            }
+        } else {
+            // Android 10 and below - Use legacy permissions
+            android.util.Log.i("MainActivity", "Using legacy storage permissions for Android ${Build.VERSION.SDK_INT}")
+            requestLegacyStoragePermissions()
+        }
+    }
+    
+    private fun requestLegacyStoragePermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val permissions = mutableListOf<String>()
+            
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) 
+                != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+            
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) 
+                != PackageManager.PERMISSION_GRANTED) {
+                permissions.add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+            
+            if (permissions.isNotEmpty()) {
+                requestPermissionLauncher.launch(permissions.toTypedArray())
+            }
+        }
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Request storage permissions for external storage access
+        requestStoragePermissions()
+        
         setContent {
             TranslatableContent {
                 ActivityContent {

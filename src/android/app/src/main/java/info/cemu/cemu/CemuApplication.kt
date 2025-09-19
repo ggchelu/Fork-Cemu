@@ -2,6 +2,7 @@ package info.cemu.cemu
 
 import android.app.Application
 import info.cemu.cemu.common.android.context.internalFolder
+import info.cemu.cemu.common.android.context.cemuExternalFolder
 import info.cemu.cemu.common.ui.localization.setLanguage
 import info.cemu.cemu.common.ui.localization.setTranslations
 import info.cemu.cemu.nativeinterface.NativeActiveSettings.initializeActiveSettings
@@ -121,18 +122,27 @@ class CemuApplication : Application() {
     }
 
     private fun initializeCemu() {
-        val displayMetrics = resources.displayMetrics
-        setDPI(displayMetrics.density)
-        initializeActiveSettings(
-            userDataPath = internalCemuUserFolder,
-            dataPath = internalCemuDataFolder,
-            cachePath = internalCemuUserFolder,
-        )
-        setNativeLibDir(applicationInfo.nativeLibraryDir)
-        setInternalDir(dataDir.absolutePath)
-        initializeEmulation()
-        initializeSwkbd()
-        refreshGraphicPacks()
+        try {
+            val displayMetrics = resources.displayMetrics
+            setDPI(displayMetrics.density)
+            
+            // Setup external Cemu directory
+            setupExternalCemuDirectory()
+            
+            initializeActiveSettings(
+                userDataPath = externalCemuUserFolder,
+                dataPath = internalCemuDataFolder,
+                cachePath = externalCemuUserFolder,
+            )
+            setNativeLibDir(applicationInfo.nativeLibraryDir)
+            setInternalDir(dataDir.absolutePath)
+            initializeEmulation()
+            initializeSwkbd()
+            refreshGraphicPacks()
+        } catch (e: Exception) {
+            android.util.Log.e("CemuApplication", "Failed to initialize Cemu: ${e.message}", e)
+            // Continue app execution with minimal functionality
+        }
     }
 
     private val internalCemuDataFolder: String
@@ -141,9 +151,70 @@ class CemuApplication : Application() {
     private val internalCemuUserFolder: String
         get() = internalFolder().toString()
 
+    private val externalCemuUserFolder: String
+        get() = try {
+            // Try external storage first, fallback to internal
+            val externalDir = cemuExternalFolder()
+            if (externalDir.canWrite() && canWriteToExternalStorage()) {
+                externalDir.toString()
+            } else {
+                internalFolder().toString()
+            }
+        } catch (e: Exception) {
+            internalFolder().toString()
+        }
+
+    private fun canWriteToExternalStorage(): Boolean {
+        return try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                android.os.Environment.isExternalStorageManager()
+            } else {
+                android.os.Environment.getExternalStorageState() == android.os.Environment.MEDIA_MOUNTED
+            }
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    private fun setupExternalCemuDirectory() {
+        try {
+            val externalCemuDir = cemuExternalFolder()
+            android.util.Log.i("CemuApplication", "Setting up external directory: ${externalCemuDir.absolutePath}")
+            android.util.Log.i("CemuApplication", "Can write: ${externalCemuDir.canWrite()}, Can write to external storage: ${canWriteToExternalStorage()}")
+            
+            if (externalCemuDir.canWrite() && canWriteToExternalStorage()) {
+                if (!externalCemuDir.exists()) {
+                    val created = externalCemuDir.mkdirs()
+                    android.util.Log.i("CemuApplication", "Created external directory: $created")
+                } else {
+                    android.util.Log.i("CemuApplication", "External directory already exists")
+                }
+                
+                // Migrate existing settings.xml if it exists in internal storage
+                val internalSettingsFile = File(internalFolder(), "settings.xml")
+                val externalSettingsFile = File(externalCemuDir, "settings.xml")
+                
+                android.util.Log.i("CemuApplication", "Internal settings exists: ${internalSettingsFile.exists()}, External settings exists: ${externalSettingsFile.exists()}")
+                
+                if (internalSettingsFile.exists() && !externalSettingsFile.exists()) {
+                    internalSettingsFile.copyTo(externalSettingsFile, overwrite = false)
+                    android.util.Log.i("CemuApplication", "Migrated settings.xml to external storage")
+                }
+            } else {
+                android.util.Log.w("CemuApplication", "Cannot write to external storage, using internal storage")
+            }
+        } catch (e: Exception) {
+            android.util.Log.w("CemuApplication", "External storage not available, using internal: ${e.message}")
+        }
+    }
+
     companion object {
         init {
-            System.loadLibrary("CemuAndroid")
+            try {
+                System.loadLibrary("CemuAndroid")
+            } catch (e: Exception) {
+                android.util.Log.e("CemuApplication", "Failed to load CemuAndroid library: ${e.message}", e)
+            }
         }
 
         private var DefaultUncaughtExceptionHandler: Thread.UncaughtExceptionHandler? = null
