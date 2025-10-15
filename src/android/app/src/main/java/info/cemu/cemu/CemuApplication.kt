@@ -179,7 +179,7 @@ class CemuApplication : Application() {
     private fun setupExternalCemuDirectory() {
         try {
             val externalCemuDir = cemuExternalFolder()
-            android.util.Log.i("CemuApplication", "Setting up external directory: ${externalCemuDir.absolutePath}")
+            android.util.Log.i("CemuApplication", "Setting up Emulation/storage/Cemu directory: ${externalCemuDir.absolutePath}")
             android.util.Log.i("CemuApplication", "Can write: ${externalCemuDir.canWrite()}, Can write to external storage: ${canWriteToExternalStorage()}")
             
             if (externalCemuDir.canWrite() && canWriteToExternalStorage()) {
@@ -198,7 +198,7 @@ class CemuApplication : Application() {
                 
                 if (internalSettingsFile.exists() && !externalSettingsFile.exists()) {
                     internalSettingsFile.copyTo(externalSettingsFile, overwrite = false)
-                    android.util.Log.i("CemuApplication", "Migrated settings.xml to external storage")
+                    android.util.Log.i("CemuApplication", "Migrated settings.xml to Emulation/storage/Cemu")
                 }
             } else {
                 android.util.Log.w("CemuApplication", "Cannot write to external storage, using internal storage")
