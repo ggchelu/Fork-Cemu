@@ -7,12 +7,9 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.Environment
 import android.provider.DocumentsContract
-import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -71,35 +68,9 @@ class MainActivity : ComponentActivity() {
         // Permissions handled, app will continue with fallback to internal storage if needed
     }
     
-    private val requestManageExternalStorageLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        // Handle manage external storage permission result
-    }
-    
     private fun requestStoragePermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Android 11+ - Use MANAGE_EXTERNAL_STORAGE
-            if (Environment.isExternalStorageManager()) {
-                // Already have permission
-                android.util.Log.i("MainActivity", "External storage manager permission already granted")
-                return
-            }
-            
-            try {
-                android.util.Log.i("MainActivity", "Requesting MANAGE_EXTERNAL_STORAGE permission")
-                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
-                    data = Uri.parse("package:$packageName")
-                }
-                requestManageExternalStorageLauncher.launch(intent)
-            } catch (e: Exception) {
-                android.util.Log.w("MainActivity", "Failed to request MANAGE_EXTERNAL_STORAGE, falling back to legacy: ${e.message}")
-                // Fallback to legacy permissions
-                requestLegacyStoragePermissions()
-            }
-        } else {
-            // Android 10 and below - Use legacy permissions
-            android.util.Log.i("MainActivity", "Using legacy storage permissions for Android ${Build.VERSION.SDK_INT}")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            android.util.Log.i("MainActivity", "Requesting legacy storage permissions for Android ${Build.VERSION.SDK_INT}")
             requestLegacyStoragePermissions()
         }
     }

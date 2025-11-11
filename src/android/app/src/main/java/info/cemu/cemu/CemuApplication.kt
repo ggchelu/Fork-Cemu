@@ -3,6 +3,7 @@ package info.cemu.cemu
 import android.app.Application
 import info.cemu.cemu.common.android.context.internalFolder
 import info.cemu.cemu.common.android.context.cemuExternalFolder
+import androidx.core.content.ContextCompat
 import info.cemu.cemu.common.ui.localization.setLanguage
 import info.cemu.cemu.common.ui.localization.setTranslations
 import info.cemu.cemu.nativeinterface.NativeActiveSettings.initializeActiveSettings
@@ -166,8 +167,16 @@ class CemuApplication : Application() {
 
     private fun canWriteToExternalStorage(): Boolean {
         return try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                android.os.Environment.isExternalStorageManager()
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                val writeGranted = ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                val readGranted = ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                writeGranted && readGranted
             } else {
                 android.os.Environment.getExternalStorageState() == android.os.Environment.MEDIA_MOUNTED
             }
